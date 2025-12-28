@@ -1,0 +1,18 @@
+# Neon Database Configuration Template
+# Copy these values to your environment variables or application.yml
+
+# Option 1: Full JDBC URL (Recommended)
+DATABASE_URL=jdbc:postgresql://ep-xxx-xxx.us-east-2.aws.neon.tech:5432/neondb?sslmode=require
+
+# Option 2: Individual Components
+DB_HOST=ep-xxx-xxx.us-east-2.aws.neon.tech
+DB_PORT=5432
+DB_NAME=neondb
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+
+# Instructions:
+# 1. Get your connection string from Neon Console: https://console.neon.tech
+# 2. Extract the components from your connection string
+# 3. Set these as environment variables before running the application
+# 4. Or update application.yml directly (not recommended for production)

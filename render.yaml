@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: web-crawler-backend
+    env: java
+    buildCommand: cd backend && ./mvnw clean install -DskipTests
+    startCommand: cd backend && java -jar target/web-crawl-backend-0.0.1-SNAPSHOT.jar
+    envVars:
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: https://web-crawler-frontend.onrender.com
+
+  - type: web
+    name: web-crawler-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://web-crawler-backend.onrender.com/api/crawl

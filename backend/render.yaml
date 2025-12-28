@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: web-crawl-backend
+    env: java
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -jar target/*.jar
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: JAVA_VERSION
+        value: 17
+    healthCheckPath: /api/crawl/health
+

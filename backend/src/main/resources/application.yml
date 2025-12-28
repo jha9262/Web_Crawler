@@ -1,0 +1,44 @@
+server:
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+spring:
+  datasource:
+    # Neon PostgreSQL connection
+    # For production (Render): Set DATABASE_URL environment variable
+    # For local: Uses default values below
+    url: ${DATABASE_URL:jdbc:postgresql://ep-dry-rice-a4nwjq20-pooler.us-east-1.aws.neon.tech:5432/neondb?sslmode=require&channel_binding=require}
+    username: ${DB_USERNAME:neondb_owner}
+    password: ${DB_PASSWORD:npg_nVaOAyTfB29D}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  # H2 console disabled for production, enable only for local dev if needed
+  h2:
+    console:
+      enabled: false
+      path: /h2-console
+
+# CORS configuration - set in environment variable for production
+cors:
+  allowed:
+    origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+
+
