@@ -1,18 +1,17 @@
-# Use OpenJDK 17
-FROM eclipse-temurin:17-jdk-alpine
+FROM openjdk:17-jdk-slim
 
-# Set working directory
 WORKDIR /app
 
 # Copy Maven wrapper and pom.xml
-COPY .mvn/ .mvn
-COPY mvnw pom.xml ./
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
 
 # Make mvnw executable
 RUN chmod +x ./mvnw
 
 # Download dependencies
-RUN ./mvnw dependency:go-offline
+RUN ./mvnw dependency:go-offline -B
 
 # Copy source code
 COPY src ./src
@@ -24,5 +23,4 @@ RUN ./mvnw clean package -DskipTests
 EXPOSE 8080
 
 # Run the application
-ENTRYPOINT ["java", "-jar", "target/*.jar"]
-
+CMD ["java", "-jar", "target/web-crawl-backend-0.0.1-SNAPSHOT.jar"]
