@@ -1,24 +1,20 @@
 package com.example.crawler.entity;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 
-@Entity
-@Table(name = "crawl_log")
+@Document(collection = "crawl_logs")
 public class CrawlLog {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @Column(length = 36, nullable = false)
     private String jobId;
 
-    @Column(nullable = false)
     private Instant timestamp;
 
-    @Column(nullable = false, length = 512)
     private String message;
 
     public CrawlLog() {
@@ -30,11 +26,11 @@ public class CrawlLog {
         this.message = message;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -62,8 +58,3 @@ public class CrawlLog {
         this.message = message;
     }
 }
-
-
-
-
-
