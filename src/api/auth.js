@@ -1,33 +1,36 @@
-// Use environment variable for API URL, fallback to localhost for dev
-const getAuthBase = () => {
+const AUTH_BASE = (() => {
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/crawl';
-  // Convert crawl URL to auth URL
   return apiUrl.replace('/api/crawl', '/api/auth');
-};
-const API_BASE = getAuthBase();
+})();
 
 async function request(path, options = {}) {
-  const token = localStorage.getItem('token');
-  const headers = {
-    'Content-Type': 'application/json'
-  };
+  const token = sessionStorage.getItem('token');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  // add token if exists
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+  let resp;
+  try {
+    resp = await fetch(`${AUTH_BASE}${path}`, { headers, ...options });
+  } catch {
+    throw new Error('Cannot connect to server. Check your network or contact support.');
   }
 
-  const resp = await fetch(`${API_BASE}${path}`, {
-    headers: headers,
-    ...options
-  });
+  if (resp.status === 429) {
+    throw new Error('Too many requests. Please wait a moment and try again.');
+  }
+
+  let body;
+  try {
+    body = await resp.json();
+  } catch {
+    body = {};
+  }
 
   if (!resp.ok) {
-    const text = await resp.text();
-    throw new Error(text || `Error: ${resp.status}`);
+    throw new Error(body.message || `Request failed (${resp.status})`);
   }
 
-  return resp.json();
+  return body;
 }
 
 export function login(credentials) {
@@ -35,8 +38,8 @@ export function login(credentials) {
     method: 'POST',
     body: JSON.stringify({
       username: credentials.username,
-      password: credentials.password
-    })
+      password: credentials.password,
+    }),
   });
 }
 
@@ -46,15 +49,14 @@ export function signup(userData) {
     body: JSON.stringify({
       username: userData.username,
       email: userData.email,
-      password: userData.password
-    })
+      password: userData.password,
+    }),
   });
 }
 
-export function validateToken(token) {
-  return request('/validate', {
+export function refreshToken(token) {
+  return request('/refresh', {
     method: 'POST',
-    body: JSON.stringify(token)
+    body: JSON.stringify({ refreshToken: token }),
   });
 }
-
