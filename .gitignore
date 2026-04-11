@@ -8,12 +8,14 @@ yarn-error.log*
 dist/
 build/
 
-# Environment variables
+# Environment variables — NEVER commit real secrets
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+backend/.env
+backend/src/main/resources/application-local.yml
 
 # IDE files
 .vscode/
@@ -27,3 +29,14 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Java / Maven
+backend/target/
+backend/*.jar
+backend/*.war
+*.class
+
+# Maven wrapper
+!backend/mvnw
+!backend/mvnw.cmd
+!backend/.mvn/
