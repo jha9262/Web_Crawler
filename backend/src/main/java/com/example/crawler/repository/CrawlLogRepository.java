@@ -1,16 +1,12 @@
 package com.example.crawler.repository;
 
 import com.example.crawler.entity.CrawlLog;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-public interface CrawlLogRepository extends JpaRepository<CrawlLog, Long> {
-
+@Repository
+public interface CrawlLogRepository extends MongoRepository<CrawlLog, String> {
     List<CrawlLog> findTop200ByJobIdOrderByTimestampAsc(String jobId);
 }
-
-
-
-
-

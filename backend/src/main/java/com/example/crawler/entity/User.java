@@ -1,30 +1,32 @@
 package com.example.crawler.entity;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.time.Instant;
 
-@Entity
-@Table(name = "users")
+@Document(collection = "users")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(nullable = false, unique = true)
+    @Indexed(unique = true)
     private String username;
 
-    @Column(nullable = false, unique = true)
+    @Indexed(unique = true)
     private String email;
 
-    @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
+    private String role;
+
     private Instant createdAt;
 
     public User() {
         this.createdAt = Instant.now();
+        this.role = "USER";
     }
 
     public User(String username, String email, String password) {
@@ -85,6 +87,14 @@ public class User {
         this.password = password;
     }
 
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
     public Instant getCreatedAt() {
         return createdAt;
     }
@@ -93,4 +103,3 @@ public class User {
         this.createdAt = createdAt;
     }
 }
-

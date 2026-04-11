@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthProvider, AuthContext } from './context/AuthContext';
+import ErrorBoundary from './components/ErrorBoundary';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import StartCrawl from './pages/StartCrawl';
@@ -10,61 +11,54 @@ import GraphView from './pages/GraphView';
 import Analytics from './pages/Analytics';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import NotFound from './pages/NotFound';
 
+// ─── Loading Screen ───────────────────────────────────────────────────────────
+function LoadingScreen() {
+  return (
+    <div className="loading-screen">
+      <div className="loading-spinner" />
+      <span className="loading-text">Loading…</span>
+    </div>
+  );
+}
+
+// ─── Protected Route ──────────────────────────────────────────────────────────
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = React.useContext(AuthContext);
-  
-  if (loading) {
-    return <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>;
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
+  if (loading) return <LoadingScreen />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
   return children;
 }
 
+// ─── Route metadata ───────────────────────────────────────────────────────────
+const ROUTE_META = {
+  '/':          { title: 'Dashboard',    subtitle: 'AI-powered overview of your latest crawl activity.' },
+  '/start':     { title: 'Start Crawl',  subtitle: 'Configure and launch a new crawling session.' },
+  '/live':      { title: 'Live Monitor', subtitle: 'Watch the crawler progress in real-time.' },
+  '/graph':     { title: 'Graph View',   subtitle: 'Explore your site as a link graph.' },
+  '/analytics': { title: 'Analytics',   subtitle: 'Deep-dive into crawl metrics and distributions.' },
+};
+
+// ─── App Shell ────────────────────────────────────────────────────────────────
 function AppShell() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, username, logout } = React.useContext(AuthContext);
 
-  const routeMeta = {
-    '/': {
-      title: 'Dashboard',
-      subtitle: 'AI-powered overview of your latest crawl activity.'
-    },
-    '/start': {
-      title: 'Start Crawl',
-      subtitle: 'Configure and launch a new crawling session.'
-    },
-    '/live': {
-      title: 'Live Monitor',
-      subtitle: 'Watch the crawler progress in real-time.'
-    },
-    '/graph': {
-      title: 'Graph View',
-      subtitle: 'Explore your site as a link graph.'
-    },
-    '/analytics': {
-      title: 'Analytics',
-      subtitle: 'Deep-dive into crawl metrics and distributions.'
-    }
-  };
+  const isAuthPage = ['/login', '/signup'].includes(location.pathname);
 
-  const meta = routeMeta[location.pathname] ?? routeMeta['/'];
-  
-  // Don't show sidebar and main layout on login/signup pages
-  if (location.pathname === '/login' || location.pathname === '/signup') {
+  if (isAuthPage) {
     return (
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path="/login"  element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>
     );
   }
-  
+
+  const meta = ROUTE_META[location.pathname] ?? ROUTE_META['/'];
+
   return (
     <div className="app-root">
       <Sidebar />
@@ -76,31 +70,18 @@ function AppShell() {
           </div>
           <div className="top-bar-actions">
             {username && (
-              <span style={{ marginRight: '15px', color: '#666', fontSize: '14px' }}>
+              <span className="top-bar-user">
                 Hi, {username}
               </span>
             )}
-            <button
-              className="neo-button ghost"
-              type="button"
-              onClick={() => navigate('/analytics')}
-            >
-              <span>View Analytics</span>
+            <button className="neo-button ghost" type="button" onClick={() => navigate('/analytics')}>
+              <span>Analytics</span>
             </button>
-            <button
-              className="neo-button primary"
-              type="button"
-              onClick={() => navigate('/start')}
-            >
+            <button className="neo-button primary" type="button" onClick={() => navigate('/start')}>
               <span>Start Crawl</span>
             </button>
             {isAuthenticated && (
-              <button
-                className="neo-button ghost"
-                type="button"
-                onClick={logout}
-                style={{ marginLeft: '10px', fontSize: '14px' }}
-              >
+              <button className="neo-button ghost" type="button" onClick={logout}>
                 Logout
               </button>
             )}
@@ -116,50 +97,18 @@ function AppShell() {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.18, ease: 'easeOut' }}
             >
-              <Routes location={location} key={location.pathname}>
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/start"
-                  element={
-                    <ProtectedRoute>
-                      <StartCrawl />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/live"
-                  element={
-                    <ProtectedRoute>
-                      <LiveMonitor />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/graph"
-                  element={
-                    <ProtectedRoute>
-                      <GraphView />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/analytics"
-                  element={
-                    <ProtectedRoute>
-                      <Analytics />
-                    </ProtectedRoute>
-                  }
-                />
-              </Routes>
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingScreen />}>
+                  <Routes location={location} key={location.pathname}>
+                    <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                    <Route path="/start" element={<ProtectedRoute><StartCrawl /></ProtectedRoute>} />
+                    <Route path="/live" element={<ProtectedRoute><LiveMonitor /></ProtectedRoute>} />
+                    <Route path="/graph" element={<ProtectedRoute><GraphView /></ProtectedRoute>} />
+                    <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </ErrorBoundary>
             </motion.div>
           </AnimatePresence>
         </section>
@@ -168,6 +117,7 @@ function AppShell() {
   );
 }
 
+// ─── Root App ─────────────────────────────────────────────────────────────────
 function App() {
   return (
     <AuthProvider>
@@ -176,24 +126,4 @@ function App() {
   );
 }
 
-// Redirect root to login if not authenticated
-export function RootRedirect() {
-  const { isAuthenticated, loading } = React.useContext(AuthContext);
-  
-  if (loading) {
-    return <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>;
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  return <Navigate to="/" replace />;
-}
-
 export default App;
-
-
-
-
-

@@ -1,44 +1,42 @@
 server:
   port: ${PORT:8080}
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+    min-response-size: 1024
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health
+  endpoint:
+    health:
+      show-details: never
 
 spring:
-  datasource:
-    # Neon PostgreSQL connection
-    # For production (Render): Set DATABASE_URL environment variable
-    # For local: Uses default values below
-    url: ${DATABASE_URL:jdbc:postgresql://ep-dry-rice-a4nwjq20-pooler.us-east-1.aws.neon.tech:5432/neondb?sslmode=require&channel_binding=require}
-    username: ${DB_USERNAME:neondb_owner}
-    password: ${DB_PASSWORD:npg_nVaOAyTfB29D}
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 10
-      minimum-idle: 2
-      connection-timeout: 30000
-      idle-timeout: 600000
-      max-lifetime: 1800000
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
-    open-in-view: false
-    properties:
-      hibernate:
-        format_sql: true
-  # H2 console disabled for production, enable only for local dev if needed
-  h2:
-    console:
-      enabled: false
-      path: /h2-console
+  # MongoDB Data Configuration
+  data:
+    mongodb:
+      # Production: Set MONGODB_URI as an environment variable
+      # Local dev: copy .env.example to .env and populate values
+      uri: ${MONGODB_URI}
 
-# CORS configuration - set in environment variable for production
+# JWT Configuration — secret MUST be at least 64 characters
+jwt:
+  secret-key: ${JWT_SECRET_KEY}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}      # 24h
+  refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}  # 7d
+
+# CORS — space-separated list of allowed origins
 cors:
-  allowed:
-    origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
 
-
+# Logging
+logging:
+  level:
+    com.example.crawler: INFO
+    org.springframework.security: WARN
+    org.springframework.data.mongodb.core.MongoTemplate: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"

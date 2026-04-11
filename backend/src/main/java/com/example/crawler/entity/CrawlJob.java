@@ -1,43 +1,23 @@
 package com.example.crawler.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
-import java.util.UUID;
 
-@Entity
-@Table(name = "crawl_job")
+@Document(collection = "crawl_jobs")
 public class CrawlJob {
 
     @Id
-    @Column(length = 36, nullable = false, updatable = false)
     private String id;
 
-    @Column(nullable = false)
     private String url;
-
-    @Column(nullable = false)
     private Instant createdAt;
-
-    @Column(nullable = false)
     private String status; // QUEUED, RUNNING, COMPLETED
-
-    @Column(nullable = false)
     private int progress;
-
-    @Column(nullable = false)
     private int pagesVisited;
-
-    @Column(nullable = false)
     private int pagesQueued;
-
-    @Column(nullable = false)
     private int errors;
-
-    @Column(nullable = false)
     private int avgResponseMs;
 
     private int maxDepth;
@@ -46,7 +26,7 @@ public class CrawlJob {
     private boolean extractMetadata;
 
     public CrawlJob() {
-        this.id = UUID.randomUUID().toString();
+        this.id = java.util.UUID.randomUUID().toString();
         this.createdAt = Instant.now();
         this.status = "QUEUED";
         this.progress = 0;
@@ -168,8 +148,3 @@ public class CrawlJob {
         this.extractMetadata = extractMetadata;
     }
 }
-
-
-
-
-
